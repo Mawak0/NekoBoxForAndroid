@@ -9,6 +9,30 @@ plugins {
 
 setupApp()
 
+val generateLibcoreAAR = tasks.register("generateLibcoreAAR") {
+    group = "build"
+    description = "Generate libcore.aar via libcore/build.sh"
+
+    outputs.upToDateWhen { false } // всегда выполняем, если хочешь
+
+    doLast {
+        exec {
+            workingDir("../")
+            commandLine("C:/Program Files/Git/bin/bash.exe", "./run", "lib core")
+        }
+    }
+}
+
+var libcoreExecuted = false
+
+generateLibcoreAAR.configure {
+    onlyIf {
+        if (libcoreExecuted) return@onlyIf false
+        libcoreExecuted = true
+        true
+    }
+}
+
 android {
     compileOptions {
         isCoreLibraryDesugaringEnabled = true
@@ -86,3 +110,8 @@ dependencies {
 
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.0.3")
 }
+
+tasks.named("preBuild").configure {
+    dependsOn(generateLibcoreAAR)
+}
+
